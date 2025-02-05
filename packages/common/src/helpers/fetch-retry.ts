@@ -4,6 +4,16 @@ export type RetryOptions = {
   callback?: (retry: number) => void;
 };
 
+if (!("timeout" in AbortSignal)) {
+  // @ts-ignore
+  AbortSignal.timeout = function (delay: number) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), delay);
+    timeoutId?.unref?.();
+    return controller.signal;
+  };
+}
+
 export const fetchRetry = async (
   url: RequestInfo | URL,
   options: RequestInit & RetryOptions = {}
